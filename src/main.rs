@@ -9,14 +9,13 @@ struct Client {
 
 impl Client {
     async fn connect(&mut self) -> Result<(), std::io::Error> {
-        let mut stream = TcpStream::connect(&self.server_addr).await?;
+        let mut stream = TcpStream::connect(format!("{}:{}", &self.server_addr, &self.server_port)).await?;
         let message = "Hello, server!";
         stream.write_all(message.as_bytes()).await?;
         let mut buffer = [0; 128];
         let mut bytes_read = 0;
         while bytes_read < buffer.len() {
-            let mut n = stream.try_read(&mut buffer[bytes_read..])?;
-            bytes_read += n;
+            bytes_read += stream.try_read(&mut buffer[bytes_read..])?;
         }
         let response = String::from_utf8_lossy(&buffer[..bytes_read]);
         println!("Server response: {}", response);
