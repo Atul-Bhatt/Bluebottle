@@ -3,7 +3,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let listener = TcpListener::bind("127.0.0.1:3242").await?;
+    let listener = TcpListener::bind("127.0.0.1:22").await?;
 
     loop {
         let (mut socket, _) = listener.accept().await?;
@@ -20,7 +20,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                  }
                              };
 
-                             socket.write_all(&buffer[..n]).await.unwrap();
+                             let body = String::from_utf8_lossy(&buffer[..n]);
+
+                             // Basic command parsing
+                             let tokens: Vec<&str> = body.split_whitespace().collect();
+                             let command = tokens[0];
+
+                             match command {
+                                 "USER" => {
+                                     // Handler USER command (e.g, authenticate user)
+                                     println!("Received USER command");
+                                     socket.write_all(b"331 Username OK").await.unwrap();
+                                 }
+                                 _ => {
+                                     println!("Unknown command:{}", command);
+                                     socket.write_all(b"500 Unknown command").await.unwrap();
+                                 }
+                             }
                          }
                      });
     }

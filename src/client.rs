@@ -27,7 +27,7 @@ impl Client {
 async fn main() -> Result<(), std::io::Error> {
     let mut client = Client {
         server_addr: String::from("127.0.0.1"),
-        server_port: 3242,
+        server_port: 22,
     };
     client.connect().await?;
     Ok(())
