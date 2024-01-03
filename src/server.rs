@@ -1,14 +1,13 @@
-#![feature(collections)]
-
 use tokio::net::TcpListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use mongodb::{
+    Database,
     bson::{doc, Document},
     options::{ClientOptions, Credential},
     Client,
 };
 
-async fn connect_db() -> Client::database {
+async fn connect_db() -> Database {
     let uri = "mongodb://localhost:27017";
     let mut client_options = ClientOptions::parse(uri).await.unwrap();
 
