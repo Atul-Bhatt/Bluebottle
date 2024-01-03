@@ -1,6 +1,7 @@
 use tokio::net::TcpStream;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 //use mio::TryRead;
+use std::io;
 
 struct Client {
     server_addr: String,
@@ -10,16 +11,22 @@ struct Client {
 impl Client {
     async fn connect(&mut self) -> Result<(), std::io::Error> {
         let mut stream = TcpStream::connect(format!("{}:{}", &self.server_addr, &self.server_port)).await?;
-        let message = "Hello, server!";
-        stream.write_all(message.as_bytes()).await?;
-        let mut buffer = [0; 128];
-        let mut bytes_read = 0;
-        while bytes_read < buffer.len() {
-            bytes_read += stream.try_read(&mut buffer[bytes_read..])?;
+        loop {
+            let mut message = String::new();
+            io::stdin().read_line(&mut message).expect("Cannot read a line!");
+            stream.write_all(message.as_bytes()).await?;
+            let mut buffer = [0; 128];
+            let mut bytes_read = 0;
+            while bytes_read < buffer.len() {
+                bytes_read += stream.try_read(&mut buffer[bytes_read..])?;
+            }
+            let response = String::from_utf8_lossy(&buffer[..bytes_read]);
+            println!("Server response: {}", response);
+            if message == "quit" {
+                break;
+            }
         }
-        let response = String::from_utf8_lossy(&buffer[..bytes_read]);
-        println!("Server response: {}", response);
-        Ok(())
+    Ok(())
     }
 }
 
