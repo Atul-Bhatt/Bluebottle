@@ -1,8 +1,25 @@
+#![feature(collections)]
+
 use tokio::net::TcpListener;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use mongodb::{
+    bson::{doc, Document},
+    options::{ClientOptions, Credential},
+    Client,
+};
+
+async fn connect_db() -> Client::database {
+    let uri = "mongodb://localhost:27017";
+    let mut client_options = ClientOptions::parse(uri).await.unwrap();
+
+    let client = Client::with_options(client_options).unwrap();
+
+    client.database("bluebottle")
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let db = connect_db().await;
     let listener = TcpListener::bind("127.0.0.1:22").await?;
 
     loop {
