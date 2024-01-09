@@ -68,6 +68,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                      println!("Received PORT command");
                                      socket.write_all(b"250 Connecting to port\n\r").await.unwrap();
                                  }
+                                 "STOR" => {
+                                     // Store a file
+                                     println!("Received STOR command");
+                                     socket.write_all(b"250 Storing file\n\r").await.unwrap();
+                                 }
                                  _ => {
                                      println!("Unknown command:{}", command);
                                      socket.write_all(b"500 Unknown command").await.unwrap();
