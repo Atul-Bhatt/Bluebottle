@@ -16,7 +16,7 @@ async fn connect_db() -> Database {
     client.database("bluebottle")
 }
 
-async fn create_data_channel() {
+async fn create_data_channel() -> Result<(), Box<dyn std::error::Error>> {
     let data_listener = TcpListener::bind("127.0.0.1:20").await?;
 
     loop {
@@ -29,7 +29,7 @@ async fn create_data_channel() {
                         Ok(n) if n == 0 => return,
                         Ok(n) => n,
                         Err(e) => {
-                            eprintln("Error reading from socket: {}", e);
+                            eprintln!("Error reading from socket: {}", e);
                             return;
                         }
                     };
@@ -37,6 +37,9 @@ async fn create_data_channel() {
                     let body = String::from_utf8_lossy(&buffer[..n]);
                     let tokens: Vec<&str> = body.split_whitespace().collect();
                     let command = tokens[0];
+                }
+            });
+        }
 }
 
 #[tokio::main]
@@ -85,7 +88,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                      // Retrieve the copy of a file
                                      println!("Received RETR command");
                                      create_data_channel();
-                                     socket.write_all(b"250 Retrieving file\r\n").await.unwrap();
+                                     socket.write_all(b"connect to data channel- 127.0.0.1:20\r\n").await.unwrap();
                                  }
                                  "PORT" => {
                                      // Address and port to which server should connect
@@ -96,7 +99,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                      // Store a file
                                      println!("Received STOR command");
                                      create_data_channel().await;
-                                     socket.write_all(b"250 Storing file\n\r").await.unwrap();
+                                     socket.write_all(b"connect to data channel- 127.0.0.1:20\n\r").await.unwrap();
                                  }
                                  _ => {
                                      println!("Unknown command:{}", command);
