@@ -13,8 +13,7 @@ async fn connect_db() -> Database {
 
     let client = Client::with_options(client_options).unwrap();
 
-    client.database("bluebottle")
-}
+    client.database("bluebottle") }
 
 async fn create_data_channel() -> Result<(), Box<dyn std::error::Error>> {
     let data_listener = TcpListener::bind("127.0.0.1:20").await?;
@@ -24,8 +23,7 @@ async fn create_data_channel() -> Result<(), Box<dyn std::error::Error>> {
         tokio::spawn(async move
             {
                 let mut buffer = [0; 1024];
-                loop {
-                    let n = match socket.read(&mut buffer).await {
+                loop { let n = match socket.read(&mut buffer).await {
                         Ok(n) if n == 0 => return,
                         Ok(n) => n,
                         Err(e) => {

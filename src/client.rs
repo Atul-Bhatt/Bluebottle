@@ -1,7 +1,13 @@
 use tokio::net::TcpStream;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-//use mio::TryRead;
+use std::net::IpAddr;
+use trust_dns_resolver::{
+    config::{ResolverConfig, ResolverOpts},
+    name_server::{GenericConnection, TokioRuntime},
+    AsyncResolver,
+};
 use std::io;
+use std::env;
 
 struct Client {
     server_addr: String,
@@ -30,10 +36,39 @@ impl Client {
     }
 }
 
+async fn get_address_from_name(server_name: String) -> String {
+    let resolver = AsyncResolver::from_system_conf(ResolverConfig::default(), ResolverOpts::default())
+        .unwrap();
+    
+    let lookup_future = resolver.lookup_ip(server_name); // Note the trailing dot
+
+    let lookup_result = async {
+        lookup_future.await.expect("Failed to lookup address")
+    };
+
+    let (addresses, _) = tokio::runtime::Runtime::new()
+        .unwrap()
+        .block_on(lookup_result)
+        .expect("Failed to get addresses");
+
+    let server_address: String;
+    for address in addresses {
+        match address {
+            IpAddr::V4(ip) => server_address = ip.to_string(),
+            _ => (),
+        }
+    }
+    server_address
+}
+
 #[tokio::main]
 async fn main() -> Result<(), std::io::Error> {
+    let args: Vec<_> = env::args().collect();
+    
+    server_address = get_address_from_name(args[1]);
+
     let mut client = Client {
-        server_addr: String::from("127.0.0.1"),
+        server_addr: String::from(args[1]),
         server_port: 22,
     };
     client.connect().await?;
