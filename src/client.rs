@@ -1,9 +1,10 @@
 use tokio::net::TcpStream;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use trust_dns_resolver::Resolver;
 use std::net::IpAddr;
 use trust_dns_resolver::{
     config::{ResolverConfig, ResolverOpts},
-    name_server::{GenericConnection, TokioRuntime},
+    name_server::{GenericConnection},
     AsyncResolver,
 };
 use std::io;
@@ -37,19 +38,20 @@ impl Client {
 }
 
 async fn get_address_from_name(server_name: String) -> String {
-    let resolver = AsyncResolver::from_system_conf(ResolverConfig::default(), ResolverOpts::default())
-        .unwrap();
-    
+    let resolver = AsyncResolver::from_system_conf(ResolverConfig::default())
+    .unwrap();
+
     let lookup_future = resolver.lookup_ip(server_name); // Note the trailing dot
 
     let lookup_result = async {
-        lookup_future.await.expect("Failed to lookup address")
+        let (addresses, _) = lookup_future.await.unwrap();
+        Ok(addresses)
     };
 
     let (addresses, _) = tokio::runtime::Runtime::new()
         .unwrap()
         .block_on(lookup_result)
-        .expect("Failed to get addresses");
+        .expect("failed to get addresses");
 
     let server_address: String;
     for address in addresses {
