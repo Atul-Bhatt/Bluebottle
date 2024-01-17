@@ -65,7 +65,7 @@ async fn get_address_from_name(server_name: String) -> String {
 async fn main() -> Result<(), std::io::Error> {
     let args: Vec<_> = env::args().collect();
     
-    server_address = get_address_from_name(args[1]);
+    let server_address = get_address_from_name(args[1]).await;
 
     let mut client = Client {
         server_addr: String::from(args[1]),
