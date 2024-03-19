@@ -1,3 +1,6 @@
+// implementation of ssh file transfer as defined in
+// https://filezilla-project.org/specs/draft-ietf-secsh-filexfer-02.txt
+
 use ssh::*;
 
 const SSH_FXP_INIT:usize           = 1;
@@ -32,4 +35,19 @@ struct packet {
     length: u32,
     typ:    u8,
     data:   &[u8],
+}
+
+struct ClientConn {
+    session: ssh::Session,
+}
+
+impl ClientConn {
+    fn close(c: Self) -> error {
+        c.session.close()
+    }
+
+    fn sendInit(c: Self) {
+        let b: [u8; 8] = [0, 0, 0, 3, 0, 0, 0, 0];
+        printf("{}", b);
+    }
 }
